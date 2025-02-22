@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 DevCheat - Complete Workflow Commands</title>
+    <meta name="description" content="Complete command workflows for development tasks. Get all related commands for any operation in one place.">
+    <style>
+        :root {
+            --primary: hsl(210, 100%, 56%);
+            --background: hsl(240, 5%, 12%);
+            --surface: hsl(240, 6%, 16%);
+            --text: hsl(0, 0%, 90%);
+            --radius: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            line-height: 1.6;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        /* Professional Header */
+        .header {
+            background: var(--surface);
+            padding: 1.5rem;
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid hsl(240 6% 20%);
+        }
+
+        .search-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 1rem;
+        }
+
+        input, select {
+            padding: 0.8rem;
+            border: 2px solid hsl(240 6% 20%);
+            border-radius: var(--radius);
+            background: hsl(240 6% 10%);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        /* Task Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .task-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid hsl(240 6% 20%);
+            margin-bottom: 1.5rem;
+        }
+
+        .task-step {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: hsl(240 6% 10%);
+            border-radius: 6px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .task-step:hover {
+            transform: translateX(5px);
+        }
+
+        .step-number {
+            position: absolute;
+            left: -10px;
+            top: -10px;
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .task-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid hsl(240 6% 20%);
+        }
+
+        .language-tag {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: hsl(240 6% 20%);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .os-tag {
+            background: hsl(240 6% 20%);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .search-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search workflows (e.g. 'Python env', 'React setup')...">
+            <select id="languageFilter">
+                <option value="all">All Languages</option>
+                <!-- Options will be populated dynamically -->
+            </select>
+            <select id="categoryFilter">
+                <option value="all">All Categories</option>
+                <!-- Options will be populated dynamically -->
+            </select>
+        </div>
+    </header>
+
+    <main class="main-grid" id="commandGrid"></main>
+
+    <!-- Load the command database -->
+    <script src="commands.js"></script>
+
+    <!-- Main Logic -->
+    <script>
+        // Render Commands
+        function renderCommands(filteredCommands) {
+            const grid = document.getElementById('commandGrid');
+            grid.innerHTML = filteredCommands.map(task => `
+                <div class="task-card">
+                    <div class="task-header">
+                        <h3>${task.title}</h3>
+                        <p>${task.description}</p>
+                        <div class="language-tag">${task.language}</div>
+                    </div>
+                    ${task.steps.map((step, index) => `
+                        <div class="task-step" onclick="copyToClipboard('${step.command}')">
+                            <div class="step-number">${index + 1}</div>
+                            <p>${step.description}</p>
+                            <pre>${step.command}</pre>
+                            ${step.os ? `<div class="os-tag">${step.os}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+
+        // Search and Filter Logic
+        function filterCommands() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const language = document.getElementById('languageFilter').value;
+            const category = document.getElementById('categoryFilter').value;
+
+            const filtered = commandDB.filter(task => {
+                const matchesSearch = task.title.toLowerCase().includes(searchTerm) ||
+                                    task.description.toLowerCase().includes(searchTerm) ||
+                                    task.steps.some(step => step.command.toLowerCase().includes(searchTerm));
+                
+                const matchesLanguage = language === 'all' || task.language === language;
+                const matchesCategory = category === 'all' || task.category === category;
+
+                return matchesSearch && matchesLanguage && matchesCategory;
+            });
+
+            renderCommands(filtered);
+        }
+
+        // Copy Functionality
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            alert('Copied to clipboard! 📋');
+        }
+
+        // Populate Filters
+        function populateFilters() {
+            const languages = [...new Set(commandDB.map(task => task.language))];
+            const categories = [...new Set(commandDB.map(task => task.category))];
+
+            const languageFilter = document.getElementById('languageFilter');
+            languages.forEach(lang => {
+                const option = document.createElement('option');
+                option.value = lang;
+                option.textContent = lang;
+                languageFilter.appendChild(option);
+            });
+
+            const categoryFilter = document.getElementById('categoryFilter');
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        // Instant Search
+        document.getElementById('searchInput').addEventListener('input', filterCommands);
+        document.getElementById('languageFilter').addEventListener('change', filterCommands);
+        document.getElementById('categoryFilter').addEventListener('change', filterCommands);
+
+        // Initial Load
+        populateFilters();
+        renderCommands(commandDB);
+    </script>
+</body>
+</html>
